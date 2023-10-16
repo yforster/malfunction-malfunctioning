@@ -1,0 +1,35 @@
+name: Build
+
+on:
+  pull_request: 
+  push: 
+
+permissions: read-all
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        ocaml-compiler:
+          - "4.13"
+          - "ocaml-variants.4.13.0+options,ocaml-option-flambda"
+          - "ocaml-variants.4.13.1+options,ocaml-option-flambda"
+          - "4.14"
+          - "ocaml-variants.4.14.0+options,ocaml-option-flambda"
+          - "ocaml-variants.4.14.1+options,ocaml-option-flambda"
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout tree
+        uses: actions/checkout@v4
+
+      - name: Set-up OCaml ${{ matrix.ocaml-compiler }}
+        uses: ocaml/setup-ocaml@v2
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+
+      - run: opam pin -y "https://github.com/yforster/malfunction.git#for-pack"
+
+      - run: opam exec -- make
